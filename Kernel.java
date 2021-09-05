@@ -30,8 +30,9 @@ public class Kernel extends Thread
   long seg2_value = 0;
   long aux_seg1 = 0;
   long aux_seg2 = 0;
-  public Vector<Long> key = new Vector(63);
-  public Vector<Long> value = new Vector(63);
+  public Vector<Long> key = new Vector(63);//seg1
+  public Vector<Long> value = new Vector(63);//seg2
+  int cont_step = 0;
   //-----------------------------------------------
 
   public void asignacion(Vector<Long> stack){
@@ -58,6 +59,8 @@ public class Kernel extends Thread
   }
 
   public boolean parametro(long num,long pag){
+    //4096
+    //0
     long begin = 0,end = 16383;
     int aux_pag = 0;
     while(true){
@@ -77,6 +80,9 @@ public class Kernel extends Thread
   }
 
   public int numSegmento(long num){
+    //      0000   -   0fff
+    //      1000   -   1fff
+    //      4096       8191
   long begin = 0,end = 4095;
   int different = 4095;
   int num_seg = 1;
@@ -101,6 +107,16 @@ public class Kernel extends Thread
     }
 
     return num_seg;
+  }
+
+  public boolean rIsFull(Vector stack){
+    for(int i=0;i<=31;i++){
+      Page page = (Page) stack.elementAt(i);
+        if(page.R != 1){
+          return false;
+        }
+    }
+    return true;
   }
   //-------------------------------------------------
   //----------------FUNCIONS 1----------------------------
@@ -167,6 +183,7 @@ public class Kernel extends Thread
         high = (block * (i + 1))-1;
         low = block * i;
         result = Long.parseLong(Integer.toString(i),16);
+        //seg1_v = 0;
         memVector.addElement(new Page(i, -1, R, M, 0, 0, high, low, result,0,0));
       }
       try 
@@ -318,6 +335,7 @@ public class Kernel extends Thread
       {
         if (line.startsWith("READ") || line.startsWith("WRITE")) 
         {
+          cont_step++;//<---------------------------------------------
           if (line.startsWith("READ")) 
           {
             command = "READ";
@@ -348,24 +366,30 @@ public class Kernel extends Thread
             else if ( tmp.startsWith( "hex" ) )
             {
               addr = Long.parseLong(st.nextToken(),16);
+
               aux_seg1 = Long.parseLong(st.nextToken(),16);
+              //4096
               aux_seg2 = Long.parseLong(st.nextToken(),16);
+              //12287
               seg1_value = numSegmento(aux_seg1);
+              // 2
               seg2_value = numSegmento(aux_seg2);
+              // 3
 
-              int posicion = numPagina(addr);
-              System.out.println("p: "+posicion);
+              int num_pagina = numPagina(addr);
 
-              if(parametro(aux_seg1,posicion)){
-                key.insertElementAt(seg1_value, posicion);  
+              System.out.println("p: "+num_pagina);
+
+              if(parametro(aux_seg1,num_pagina)){
+                key.insertElementAt(seg1_value, num_pagina);  
               }else{
-                key.insertElementAt((long)-1, posicion); 
+                key.insertElementAt((long)-1, num_pagina); 
               }
               
-              if(parametro(aux_seg2,posicion)){
-                value.insertElementAt(seg2_value, posicion);  
+              if(parametro(aux_seg2,num_pagina)){
+                value.insertElementAt(seg2_value, num_pagina);  
               }else{
-                value.insertElementAt((long)-1, posicion);                
+                value.insertElementAt((long)-1, num_pagina);                
               }
 
               System.out.println("S1 : "+seg1_value);
@@ -556,7 +580,7 @@ public class Kernel extends Thread
         {
           System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+        PageFault.replacePage( memVector , virtPageNum ,index , controlPanel );
         controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
@@ -591,7 +615,8 @@ public class Kernel extends Thread
         {
            System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          controlPanel.pageFaultValueLabel.setText( "YES" );
+        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          
+        controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
       {
@@ -611,10 +636,12 @@ public class Kernel extends Thread
         }
       }
     }
+
+    cont_step--;//<-------------------------------------
     for ( i = 0; i < virtPageNum; i++ ) 
     {
       Page page = ( Page ) memVector.elementAt( i );
-      if ( page.R == 1 && page.lastTouchTime == 10 ) 
+      if ( page.R == 1 && page.lastTouchTime == 310 ) // <-- 31 paginas
       {
         page.R = 0;
       }
@@ -626,7 +653,34 @@ public class Kernel extends Thread
     }
     runs++;
     controlPanel.timeValueLabel.setText( Integer.toString( runs*10 ) + " (ns)" );
+    
+    //------------------------
+    if(cont_step == 0){
+      if(rIsFull(memVector) == true){//JORGE
+        for(int k = 0;k <= 31; k++){
+          Page page = ( Page ) memVector.elementAt(k);
+          if(page.lastTouchTime == page.inMemTime){
+            PageFault.replacePageLRU(page.physical,memVector,controlPanel);
+            System.out.println("Numero de pagina en intercambio: "+page.physical);
+          }
+        }
+      }else{//JOHANA
+        boolean flag = true;
+        while(flag){
+          Page page = ( Page ) memVector.elementAt((int)(Math.random()*32));//0 - 31
+          if(page.R != 1){
+            PageFault.replacePageLRU(page.physical,memVector,controlPanel);
+            System.out.println("Numero de pagina en intercambio: "+page.physical);
+            flag = false;
+          }
+        }
+      }
+    }
+
+
   }
+
+  
 
   //----------------FUNCIONS 6----------------------------
 

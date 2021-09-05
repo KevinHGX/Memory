@@ -50,8 +50,31 @@ public class PageFault {
    * @param controlPanel represents the graphical element of the 
    *   simulator, and allows one to modify the current display.
    */
+  public static void replacePageLRU( int firstpage,Vector mem , ControlPanel controlPanel){
+    int pagefree = 0;
+
+    for(int i = 63;i>=32;i--){
+      Page page = (Page) mem.elementAt(i);
+      if(page.physical == -1){
+        pagefree = page.id;
+      }
+    }
+    System.out.println("PF:"+pagefree);
+    Page page = ( Page ) mem.elementAt( firstpage );//page 0
+    Page nextpage = ( Page ) mem.elementAt( pagefree );//page 50
+    controlPanel.removePhysicalPage( firstpage );//limpia la pagina
+    nextpage.physical = page.physical;//intercambio de pagina fisica
+    controlPanel.addPhysicalPage( nextpage.physical , pagefree );
+    page.inMemTime = 0;
+    page.lastTouchTime = 0;
+    page.R = 0;
+    page.M = 0;
+    page.physical = -1;
+  }
+
+
   public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel ) 
-  {
+  {                             //  [1,2,3,...] , 63 , INDICE 
     int count = 0;
     int oldestPage = -1;
     int oldestTime = 0;
@@ -79,16 +102,15 @@ public class PageFault {
     if (oldestPage == -1) {
       oldestPage = firstPage;
     }
-    Page page = ( Page ) mem.elementAt( oldestPage );
-    Page nextpage = ( Page ) mem.elementAt( replacePageNum );
-    controlPanel.removePhysicalPage( oldestPage );
-    nextpage.physical = page.physical;
+    Page page = ( Page ) mem.elementAt( oldestPage );//page 0
+    Page nextpage = ( Page ) mem.elementAt( replacePageNum );//page 50
+    controlPanel.removePhysicalPage( oldestPage );//limpia la pagina
+    nextpage.physical = page.physical;//intercambio de pagina fisica
     controlPanel.addPhysicalPage( nextpage.physical , replacePageNum );
     page.inMemTime = 0;
     page.lastTouchTime = 0;
     page.R = 0;
     page.M = 0;
     page.physical = -1;
-    
   }
 }

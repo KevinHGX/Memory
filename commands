@@ -3,14 +3,90 @@
 // WRITE <OPTIONAL number type: bin/hex/oct> <virtual memory address or random>
 //READ bin 100
 
-
+//READ hex 10000 10200 13fff
 
 READ hex 0000 1000 2fff
 
-WRITE hex 5f12 3000 7fff
+READ hex 4000 3000 7fff
 
-READ hex cccc e000 ffff
+READ hex 8000 8100 9000
+
+READ hex c000 e000 ffff
+
+READ hex 10000 10200 13fff
+
+READ hex 14000 14100 17fff
 
 READ hex 18000 18100 1bbbb
 
+READ hex 1c000 1c100 1ffff
+
+READ hex 20000 20100 23fff
+
+READ hex 24000 24100 27fff
+
+READ hex 28000 28100 2bfff
+
+READ hex 2c000 2c100 2ffff
+
+READ hex 30000 30100 33fff
+
+READ hex 34000 34100 37fff
+
+READ hex 38000 38100 3bfff
+
+READ hex 3c000 3c100 3ffff
+
+READ hex 40000 40100 43fff
+
+READ hex 44000 44100 47fff
+
+READ hex 48000 48100 4bfff
+
+READ hex 4c000 4c100 4ffff
+
+//READ hex 50000 50100 53fff
+
+//READ hex 54000 54100 57fff
+
+//READ hex 58000 58100 5bfff
+
+//READ hex 5c000 5c100 5ffff
+
+//READ hex 60000 60100 63fff
+
+//READ hex 64000 64100 67fff
+
+//READ hex 68000 68100 6bfff
+
+//READ hex 6c000 6c100 6ffff
+
+//READ hex 70000 70100 73fff
+
+//READ hex 74000 74100 77fff
+
+//READ hex 78000 78100 7bfff
+
+//READ hex 7c000 7c100 7ffff
+
+
+
+
+
+
+// vector 1 [0,0,0,0,0,0,.... N]      N = 63
+
+//   [1000,3000,e000,18100]
+
+//   [ 2 , -1 ,  0  , 3 ,  0  , 0  , 1 ,  0 ....]    < Vector
+ 
+//     0    1    2    3    4    5    6    7      < Index
+
+// vector 2 [0,0,0,0,0.... N]       N = 63 
+
+//   [2fff,7fff,ffff,1bbbb]
+
+//   [ 3 ,  4 ,  0 ,  4 ,  0 ,  0 ,  4 ,  0 ....]  	< Vector
+
+//     0    1    2    3    4    5    6    7     < Index
 
